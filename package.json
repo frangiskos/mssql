@@ -15,14 +15,14 @@
     "keywords": ["database", "mssql", "sql", "sqlserver", "node-sqlserver", "node-mssql"],
     "repository": {
         "type": "git",
-        "url": "git+https://gitlab.com/iot-utils/mssql.git"
+        "url": "git+https://github.com/frangiskos/mssql.git"
     },
     "author": "Frangiskos <frangiskos@gmail.com>",
     "license": "MIT",
     "bugs": {
-        "url": "https://gitlab.com/iot-utils/mssql/issues"
+        "url": "https://github.com/frangiskos/mssql/issues"
     },
-    "homepage": "https://gitlab.com/iot-utils/mssql#README",
+    "homepage": "https://github.com/frangiskos/mssql",
     "dependencies": {
         "mssql": "^4.1.0",
         "@types/mssql": "^4.0.6"

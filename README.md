@@ -6,7 +6,7 @@ It uses node-mssql under the hood
 ## Installation
 
 ```bash
-npm install https://gitlab.com/iot-utils/mssql.git
+npm install @frangiskos/mssql
 ```
 
 ## initialization

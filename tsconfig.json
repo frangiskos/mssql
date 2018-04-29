@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    /* Basic Options */
+    "target": "es2015",
+    "module": "commonjs",
+    "declaration": true,    
+    "outDir": "./dist",
+    "strict": true,
+    "preserveConstEnums": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noImplicitReturns": true,
+    // "suppressImplicitAnyIndexErrors": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noResolve": true,
+
+    "sourceMap": true,
+    "listEmittedFiles": true,
+
+    "noEmitHelpers": false,
+    "pretty": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

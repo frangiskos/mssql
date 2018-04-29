@@ -1,0 +1,40 @@
+{
+    "name": "@iot/mssql",
+    "version": "0.5.0-beta.3",
+    "description": "Connect to an MS-SQL server and run queries using a simple API",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "prepublish": "npm run build",
+        "build": "tsc",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "engines": {
+        "node": ">=4"
+    },
+    "keywords": [
+        "database",
+        "mssql",
+        "sql",
+        "sqlserver",
+        "node-sqlserver",
+        "node-mssql"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://gitlab.com/iot-utils/mssql.git"
+    },
+    "author": "Frangiskos <frangiskos@gmail.com>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://gitlab.com/iot-utils/mssql/issues"
+    },
+    "homepage": "https://gitlab.com/iot-utils/mssql#README",
+    "dependencies": {
+        "mssql": "^4.1.0",
+        "@types/mssql": "^4.0.6"
+    },
+    "devDependencies": {
+        "typescript": "^2.6.2"
+    }
+}

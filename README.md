@@ -12,7 +12,7 @@ npm install @frangiskos/mssql
 ## initialization
 
 ```typescript
-import { SqlConfig, sqlInit } from 'mssql-lib';
+import { SqlConfig, sqlInit } from '@frangiskos/mssql';
 const sqlConfig: SqlConfig = {
     user: 'sa',
     password: 'password',
@@ -28,7 +28,7 @@ sqlInit(sqlConfig);
 > the rest parameters are the values for the parameters (The first one will replace @P1, the second will replace @P2 and so on)
 
 ```typescript
-import { sql } from 'mssql-lib';
+import { sql } from '@frangiskos/mssql';
 sql
     .query('SELECT * FROM USERS WHERE name like @P1 AND isActive = @P2', 'John%', true)
     .then(data => console.log(data))

@@ -7,7 +7,7 @@
     "scripts": {
         "prepublish": "npm run build",
         "build": "tsc",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "ts-node src/tests"
     },
     "engines": {
         "node": ">=4"
@@ -31,10 +31,11 @@
     },
     "homepage": "https://github.com/frangiskos/mssql",
     "dependencies": {
-        "mssql": "^4.1.0",
-        "@types/mssql": "^4.0.6"
+        "@types/mssql": "^6.0.0",
+        "mssql": "^6.0.1"
     },
     "devDependencies": {
+        "ts-node": "^8.6.2",
         "typescript": "^2.6.2"
     }
 }

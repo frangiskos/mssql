@@ -2,7 +2,7 @@ import * as mssql from 'mssql';
 
 export class SqlFactory {
     private static instance: SqlFactory = new SqlFactory();
-    readonly connectionTimeout = 30000;
+    private readonly connectionTimeout = 30000;
     private pool: mssql.ConnectionPool | undefined;
 
     private timerReset = () => {
@@ -25,11 +25,12 @@ export class SqlFactory {
     }
 
     public close = () => {
-        if (this.pool) this.pool.close();
+        this.idleTimer && clearTimeout(this.idleTimer);
+        this.pool && this.pool.close();
     };
 
     /** Executes query and returns the result */
-    public query(sqlStr: string, ...params: Array<string | number | boolean>): Promise<mssql.IRecordSet<any>> {
+    public query(sqlStr: string, ...params: Array<string | number | boolean | Date>): Promise<mssql.IRecordSet<any>> {
         try {
             return Promise.resolve()
                 .then(_ => {
@@ -89,6 +90,15 @@ export class SqlFactory {
                                     paramType = mssql.Money;
                                 }
                                 break;
+                            case 'object': {
+                                if (p && Object.prototype.toString.call(p) === '[object Date]' && !isNaN(+p)) {
+                                    paramType = mssql.Date;
+                                    break;
+                                } else {
+                                    paramType = mssql.NVarChar;
+                                    break;
+                                }
+                            }
                             default:
                                 paramType = mssql.NVarChar;
                                 break;

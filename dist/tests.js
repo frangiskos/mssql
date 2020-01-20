@@ -9,13 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const _1 = require(".");
+require('dotenv').config();
 const assert = require("assert");
+const _1 = require(".");
 const sqlConfig = {
-    user: 'sa',
-    password: 'IoT123456!',
-    server: 'mssql.vm.iot.com.cy',
-    database: 'aa_test',
+    server: process.env.DB_SERVER,
+    database: process.env.DB_DATABASE,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
     options: {
         enableArithAbort: true
     }

@@ -1,6 +1,7 @@
-import { sql, SqlConfig } from '.';
-import * as assert from 'assert';
 require('dotenv').config();
+
+import * as assert from 'assert';
+import { sql, SqlConfig } from '.';
 
 const sqlConfig: SqlConfig = {
     server: process.env.DB_SERVER!,

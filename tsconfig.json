@@ -13,14 +13,10 @@
         "suppressImplicitAnyIndexErrors": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-
         "sourceMap": true,
         "listEmittedFiles": true,
-
-        "noEmitHelpers": false,
         "pretty": true,
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "skipLibCheck": true
     },
     "include": ["src/**/*"]
 }

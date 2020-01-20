@@ -24,9 +24,9 @@ export class SqlFactory {
         this.pool = new mssql.ConnectionPool(config);
     }
 
-    public close = () => {
+    public close = async () => {
         this.idleTimer && clearTimeout(this.idleTimer);
-        this.pool && this.pool.close();
+        this.pool && (await this.pool.close());
     };
 
     /** Executes query and returns the result */

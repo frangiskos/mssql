@@ -82,8 +82,6 @@ async function runTests() {
 }
 
 runTests()
-    .then(() => {
-        console.log('Tests completed');
-        sql.close();
-    })
+    .then(() => console.log('Tests completed'))
+    .then(sql.close)
     .catch(console.error);

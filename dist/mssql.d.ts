@@ -1,20 +1,20 @@
 import * as mssql from 'mssql';
 export declare class SqlFactory {
     private static instance;
-    readonly connectionTimeout: number;
+    private readonly connectionTimeout;
     private pool;
     private timerReset;
     private idleTimer;
     private constructor();
     static getInstance(): SqlFactory;
     init(config: mssql.config): void;
-    close: () => void;
+    close: () => Promise<void>;
     /** Executes query and returns the result */
-    query(sqlStr: string, ...params: Array<string | number | boolean>): Promise<mssql.IRecordSet<any>>;
+    query(sqlStr: string, ...params: Array<string | number | boolean | Date>): Promise<mssql.IRecordSet<any>>;
     queryOne(sqlStr: string, ...params: Array<string | number | boolean>): Promise<any>;
     insertReturnIdentity(sqlStr: string, ...params: Array<string | number | boolean>): Promise<number | null>;
     /** Alias to query */
-    q: (sqlStr: string, ...params: (string | number | boolean)[]) => Promise<mssql.IRecordSet<any>>;
+    q: (sqlStr: string, ...params: (string | number | boolean | Date)[]) => Promise<mssql.IRecordSet<any>>;
     /** Alias to queryOne */
     q1: (sqlStr: string, ...params: (string | number | boolean)[]) => Promise<any>;
     /** Alias to insertReturnIdentity */

@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -16,10 +17,10 @@ class SqlFactory {
             clearTimeout(this.idleTimer);
             this.idleTimer = setTimeout(this.close, this.connectionTimeout);
         };
-        this.close = () => {
-            if (this.pool)
-                this.pool.close();
-        };
+        this.close = () => __awaiter(this, void 0, void 0, function* () {
+            this.idleTimer && clearTimeout(this.idleTimer);
+            this.pool && (yield this.pool.close());
+        });
         /** Alias to query */
         this.q = this.query;
         /** Alias to queryOne */
@@ -98,6 +99,16 @@ class SqlFactory {
                                 paramType = mssql.Money;
                             }
                             break;
+                        case 'object': {
+                            if (p && Object.prototype.toString.call(p) === '[object Date]' && !isNaN(+p)) {
+                                paramType = mssql.Date;
+                                break;
+                            }
+                            else {
+                                paramType = mssql.NVarChar;
+                                break;
+                            }
+                        }
                         default:
                             paramType = mssql.NVarChar;
                             break;
@@ -152,8 +163,8 @@ class SqlFactory {
         });
     }
 }
-SqlFactory.instance = new SqlFactory();
 exports.SqlFactory = SqlFactory;
+SqlFactory.instance = new SqlFactory();
 // export function sqlInit(config: SqlConfig) {
 //     SqlFactory.getInstance().init(config);
 // }

@@ -1,11 +1,12 @@
 import { sql, SqlConfig } from '.';
 import * as assert from 'assert';
+require('dotenv').config();
 
 const sqlConfig: SqlConfig = {
-    user: 'sa',
-    password: 'IoT123456!',
-    server: 'mssql.vm.iot.com.cy',
-    database: 'aa_test',
+    server: process.env.DB_SERVER!,
+    database: process.env.DB_DATABASE!,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
     options: {
         enableArithAbort: true
     }

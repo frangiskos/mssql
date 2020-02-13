@@ -81,6 +81,8 @@ async function runTests() {
 
     assert(Array.isArray(bothPersons));
     assert(bothPersons[1].birthdate === null);
+
+    await sql.q('DROP TABLE IF EXISTS people');
 }
 
 runTests()

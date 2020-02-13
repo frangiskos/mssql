@@ -66,6 +66,7 @@ function runTests() {
         const bothPersons = yield _1.sql.q('SELECT * FROM people');
         assert(Array.isArray(bothPersons));
         assert(bothPersons[1].birthdate === null);
+        yield _1.sql.q('DROP TABLE IF EXISTS people');
     });
 }
 runTests()

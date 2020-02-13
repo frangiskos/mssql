@@ -101,7 +101,7 @@ class SqlFactory {
                             break;
                         case 'object': {
                             if (p && Object.prototype.toString.call(p) === '[object Date]' && !isNaN(+p)) {
-                                paramType = mssql.Date;
+                                paramType = mssql.DateTime;
                                 break;
                             }
                             else {

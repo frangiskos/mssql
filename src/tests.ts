@@ -71,6 +71,12 @@ async function runTests() {
     assert(jonnyFromDB.salary === 2345.67);
     assert(typeof jonnyFromDB.isMarried === 'boolean');
 
+    /** Return value of the first key of the first record returned */
+    const jonnyName = await sql.qv(`SELECT name FROM people WHERE name = @P1`, 'Johnny');
+    assert(jonnyName === 'Johnny');
+    const noName = await sql.qv(`SELECT name FROM people WHERE name = @P1`, 'Nobody');
+    assert(noName === null);
+
     /** Add record and return identity */
     const id = await sql.ii(`INSERT INTO people (name) VALUES (@P1)`, 'Not Johnny');
     /** Test that identity is equal to 2 */

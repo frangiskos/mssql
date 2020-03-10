@@ -29,8 +29,11 @@ export class SqlFactory {
         this.pool && (await this.pool.close());
     };
 
-    /** Executes query and returns the result */
-    public query(sqlStr: string, ...params: Array<string | number | boolean | Date>): Promise<mssql.IRecordSet<any>> {
+    /** Executes query and returns the result as an array of objects */
+    public query<T extends string | number | boolean | Date = any>(
+        sqlStr: string,
+        ...params: Array<string | number | boolean | Date>
+    ): Promise<mssql.IRecordSet<T>> {
         try {
             return Promise.resolve()
                 .then(_ => {
@@ -127,9 +130,12 @@ export class SqlFactory {
         }
     }
 
-    // Executes the query and returns the first record
-    public async queryOne(sqlStr: string, ...params: Array<string | number | boolean>): Promise<any> {
-        const recordset = await this.query(sqlStr, ...params);
+    /** Executes the query and returns the first record (object) or null if no records found */
+    public async queryOne<T extends string | number | boolean | Date = any>(
+        sqlStr: string,
+        ...params: Array<string | number | boolean>
+    ): Promise<T | null> {
+        const recordset = await this.query<T>(sqlStr, ...params);
         if (recordset.length) {
             return recordset[0];
         } else {
@@ -137,10 +143,27 @@ export class SqlFactory {
         }
     }
 
-    // Executes an Insert query and returns the identity of the record inserted
+    /**
+     * Executes the query and returns the first value of the first record or null if no records found
+     * Can be useful in cases like "SELECT COUNT (*) FROM Users" or "SELECT Name From Users WHERE id = @P1"
+     */
+    public async queryValue<T extends string | number | boolean | Date = any>(
+        sqlStr: string,
+        ...params: Array<string | number | boolean | Date>
+    ): Promise<T | null> {
+        const recordset = await this.query(sqlStr, ...params);
+
+        if (recordset.length && Object.keys(recordset[0]).length) {
+            return recordset[0][Object.keys(recordset[0])[0]];
+        } else {
+            return Promise.resolve(null);
+        }
+    }
+
+    /** Executes an Insert query and returns the identity of the record inserted */
     public async insertReturnIdentity(
         sqlStr: string,
-        ...params: Array<string | number | boolean>
+        ...params: Array<string | number | boolean | Date>
     ): Promise<number | null> {
         sqlStr = `${sqlStr}; SELECT SCOPE_IDENTITY()`;
         const recordset = await this.query(sqlStr, ...params);
@@ -155,8 +178,10 @@ export class SqlFactory {
     public q = this.query;
 
     /** Alias to queryOne */
-
     public q1 = this.queryOne;
+
+    /** Alias to queryValue */
+    public qv = this.queryValue;
 
     /** Alias to insertReturnIdentity */
     public ii = this.insertReturnIdentity;

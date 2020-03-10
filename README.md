@@ -88,13 +88,26 @@ SELECT RECORDS FROM TABLE
     ); // returns an array with all matching records
 ```
 
-SELECT SINGLE RECORD FROM TABLE
+SELECT FIRST RECORD FROM TABLE
 
 ```typescript
-    const Johnny = await sql.q(
+    const Johnny = await sql.q1(
         `SELECT * FROM people WHERE id = @P1`,
         1)
     ); // returns the first matching record or null
+```
+
+SELECT THE VALUE OF THE FIRST KEY OF THE FIRST RECORD
+
+```typescript
+    const JohnnyName = await sql.qv(
+        `SELECT name FROM people WHERE id = @P1`,
+        1)
+    ); // returns the value of the first key of the first matching record or null
+
+    const totalPeople = await sql.qv(
+        `SELECT count(*) FROM people`)
+    ); // returns the number of records in table
 ```
 
 See ./src/tests.ts for more examples.

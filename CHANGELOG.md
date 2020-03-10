@@ -14,3 +14,7 @@ Update docs
 ## [0.1.2] - February 13, 2020
 
 Fix issue with Date parameter
+
+## [0.2.0] - March 03, 2020
+
+Feat: use sql.queryValue to query for the value of the first key of the first record

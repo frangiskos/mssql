@@ -25,6 +25,8 @@ class SqlFactory {
         this.q = this.query;
         /** Alias to queryOne */
         this.q1 = this.queryOne;
+        /** Alias to queryValue */
+        this.qv = this.queryValue;
         /** Alias to insertReturnIdentity */
         this.ii = this.insertReturnIdentity;
         if (SqlFactory.instance)
@@ -37,7 +39,7 @@ class SqlFactory {
     init(config) {
         this.pool = new mssql.ConnectionPool(config);
     }
-    /** Executes query and returns the result */
+    /** Executes query and returns the result as an array of objects */
     query(sqlStr, ...params) {
         try {
             return Promise.resolve()
@@ -137,7 +139,7 @@ class SqlFactory {
             throw error;
         }
     }
-    // Executes the query and returns the first record
+    /** Executes the query and returns the first record (object) or null if no records found */
     queryOne(sqlStr, ...params) {
         return __awaiter(this, void 0, void 0, function* () {
             const recordset = yield this.query(sqlStr, ...params);
@@ -149,7 +151,22 @@ class SqlFactory {
             }
         });
     }
-    // Executes an Insert query and returns the identity of the record inserted
+    /**
+     * Executes the query and returns the first value of the first record or null if no records found
+     * Can be useful in cases like "SELECT COUNT (*) FROM Users" or "SELECT Name From Users WHERE id = @P1"
+     */
+    queryValue(sqlStr, ...params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const recordset = yield this.query(sqlStr, ...params);
+            if (recordset.length && Object.keys(recordset[0]).length) {
+                return recordset[0][Object.keys(recordset[0])[0]];
+            }
+            else {
+                return Promise.resolve(null);
+            }
+        });
+    }
+    /** Executes an Insert query and returns the identity of the record inserted */
     insertReturnIdentity(sqlStr, ...params) {
         return __awaiter(this, void 0, void 0, function* () {
             sqlStr = `${sqlStr}; SELECT SCOPE_IDENTITY()`;

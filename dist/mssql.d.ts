@@ -9,16 +9,25 @@ export declare class SqlFactory {
     static getInstance(): SqlFactory;
     init(config: mssql.config): void;
     close: () => Promise<void>;
-    /** Executes query and returns the result */
-    query(sqlStr: string, ...params: Array<string | number | boolean | Date>): Promise<mssql.IRecordSet<any>>;
-    queryOne(sqlStr: string, ...params: Array<string | number | boolean>): Promise<any>;
-    insertReturnIdentity(sqlStr: string, ...params: Array<string | number | boolean>): Promise<number | null>;
+    /** Executes query and returns the result as an array of objects */
+    query<T extends string | number | boolean | Date = any>(sqlStr: string, ...params: Array<string | number | boolean | Date>): Promise<mssql.IRecordSet<T>>;
+    /** Executes the query and returns the first record (object) or null if no records found */
+    queryOne<T extends string | number | boolean | Date = any>(sqlStr: string, ...params: Array<string | number | boolean>): Promise<T | null>;
+    /**
+     * Executes the query and returns the first value of the first record or null if no records found
+     * Can be useful in cases like "SELECT COUNT (*) FROM Users" or "SELECT Name From Users WHERE id = @P1"
+     */
+    queryValue<T extends string | number | boolean | Date = any>(sqlStr: string, ...params: Array<string | number | boolean | Date>): Promise<T | null>;
+    /** Executes an Insert query and returns the identity of the record inserted */
+    insertReturnIdentity(sqlStr: string, ...params: Array<string | number | boolean | Date>): Promise<number | null>;
     /** Alias to query */
-    q: (sqlStr: string, ...params: (string | number | boolean | Date)[]) => Promise<mssql.IRecordSet<any>>;
+    q: <T extends string | number | boolean | Date = any>(sqlStr: string, ...params: (string | number | boolean | Date)[]) => Promise<mssql.IRecordSet<T>>;
     /** Alias to queryOne */
-    q1: (sqlStr: string, ...params: (string | number | boolean)[]) => Promise<any>;
+    q1: <T extends string | number | boolean | Date = any>(sqlStr: string, ...params: (string | number | boolean)[]) => Promise<T | null>;
+    /** Alias to queryValue */
+    qv: <T extends string | number | boolean | Date = any>(sqlStr: string, ...params: (string | number | boolean | Date)[]) => Promise<T | null>;
     /** Alias to insertReturnIdentity */
-    ii: (sqlStr: string, ...params: (string | number | boolean)[]) => Promise<number | null>;
+    ii: (sqlStr: string, ...params: (string | number | boolean | Date)[]) => Promise<number | null>;
 }
 export interface SqlConfig extends mssql.config {
 }

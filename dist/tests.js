@@ -58,6 +58,11 @@ function runTests() {
         assert(typeof jonnyFromDB.salary === 'number');
         assert(jonnyFromDB.salary === 2345.67);
         assert(typeof jonnyFromDB.isMarried === 'boolean');
+        /** Return value of the first key of the first record returned */
+        const jonnyName = yield _1.sql.qv(`SELECT name FROM people WHERE name = @P1`, 'Johnny');
+        assert(jonnyName === 'Johnny');
+        const noName = yield _1.sql.qv(`SELECT name FROM people WHERE name = @P1`, 'Nobody');
+        assert(noName === null);
         /** Add record and return identity */
         const id = yield _1.sql.ii(`INSERT INTO people (name) VALUES (@P1)`, 'Not Johnny');
         /** Test that identity is equal to 2 */

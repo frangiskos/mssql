@@ -9,10 +9,9 @@ const sqlConfig: SqlConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
     options: {
-        enableArithAbort: true
-    }
+        enableArithAbort: true,
+    },
 };
-sql.init(sqlConfig);
 
 interface Person {
     id?: number;
@@ -29,7 +28,7 @@ const log = {
     },
     end(msg: string) {
         console.log(`Asserting ${msg} OK`);
-    }
+    },
 };
 
 async function runTests() {
@@ -59,7 +58,7 @@ async function runTests() {
         birthdate: new Date('2000-01-01'),
         childrenCount: 2,
         salary: 2345.67,
-        isMarried: true
+        isMarried: true,
     };
 
     log.start('sql.q Insert data into DB');
@@ -95,7 +94,7 @@ async function runTests() {
     log.end('sql.qv single value');
 
     log.start('sql.qv count');
-    const totalPersons = await sql.qv(`SELECT count(*) FROM people`);
+    let totalPersons = await sql.qv(`SELECT count(*) FROM people`);
     assert(totalPersons === 1);
     log.end('sql.qv count');
 
@@ -116,13 +115,20 @@ async function runTests() {
     assert(bothPersons[1].birthdate === null);
     log.end('sql.q return recordset');
 
-    await sql.q('DROP TABLE IF EXISTS people');
+    log.start('sql.function.insertObject');
+    const personsBefore = await sql.qv(`SELECT count(*) FROM people`);
+    await sql.functions.insertObject('people', johnnyData);
+    await sql.functions.insertObject('people', [johnnyData, johnnyData, johnnyData, johnnyData]);
+    const personsAfter = await sql.qv(`SELECT count(*) FROM people`);
+    assert(personsAfter - personsBefore === 5);
+    log.end('sql.function.insertObject');
 }
 
-runTests()
+sql.init(sqlConfig)
+    .then(() => runTests())
     .then(() => console.log('Tests completed'))
     .then(sql.close)
-    .catch(e => {
+    .catch((e) => {
         if (e instanceof AssertionError) {
             // Output expected AssertionErrors.
             console.error(`Assertion failed.\n- Expected: ${e.expected}\n- Got: ${e.actual}\n-Error: ${e}`);

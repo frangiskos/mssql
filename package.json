@@ -1,6 +1,6 @@
 {
     "name": "@frangiskos/mssql",
-    "version": "0.2.1",
+    "version": "0.3.0",
     "description": "Connect to an MS-SQL server and run queries using a simple API",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",

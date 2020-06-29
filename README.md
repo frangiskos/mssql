@@ -17,10 +17,10 @@ const sqlConfig: SqlConfig = {
     user: 'my_db_user',
     password: 'my_super_secret_password',
     database: 'my_database_name',
-    server: 'the_sql_server'
+    server: 'the_sql_server',
 };
 
-sql.init(sqlConfig);
+await sql.init(sqlConfig);
 ```
 
 ## Usage
@@ -31,8 +31,8 @@ sql.init(sqlConfig);
 ```typescript
 import { sql } from '@frangiskos/mssql';
 sql.query('SELECT * FROM USERS WHERE name like @P1 AND isActive = @P2', 'John%', true)
-    .then(data => console.log(data))
-    .catch(error => console.error(error));
+    .then((data) => console.log(data))
+    .catch((error) => console.error(error));
 ```
 
 ### Using Async / Await
@@ -50,6 +50,12 @@ try {
 -   sql.query (alias: sql.q): Executes query and returns an array with the results. Can be used for any query types
 -   sql.queryOne (alias: sql.q1): Executes the query and returns the first record, or null if there are no records
 -   sql.insertReturnIdentity (alias: sql.ii): Can be used for INSERT. It will return the identity of the inserted record (i.e. SCOPE_IDENTITY()) or null
+
+### SQL Functions
+
+SQL Functions are special methods that make it easier to work with sql in some cases.
+
+-   sql.functions.insertObject: Inserts an object or an array of objects in database by matching object keys with database column names
 
 ### Examples
 
@@ -108,6 +114,18 @@ SELECT THE VALUE OF THE FIRST KEY OF THE FIRST RECORD
     const totalPeople = await sql.qv(
         `SELECT count(*) FROM people`)
     ); // returns the number of records in table
+```
+
+INSERT OBJECT FUNCTION
+
+```typescript
+await sql.functions.insertObject('people', {
+    name: 'Mike',
+    birthdate: '2000-02-03',
+    childrenCount: 0,
+    salary: 3000,
+    isMarried: false,
+});
 ```
 
 See ./src/tests.ts for more examples.

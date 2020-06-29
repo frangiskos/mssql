@@ -1,4 +1,5 @@
 import * as mssql from 'mssql';
+import { sqlFunctions, SQLFunctions } from './functions';
 
 export class SqlFactory {
     private static instance: SqlFactory = new SqlFactory();
@@ -14,6 +15,7 @@ export class SqlFactory {
     private constructor() {
         if (SqlFactory.instance) throw new Error('Instantiation failed. Use .getInstance() instead of new.');
         SqlFactory.instance = this;
+        this.functions = sqlFunctions(this);
     }
 
     private async checkConnection() {
@@ -45,7 +47,7 @@ export class SqlFactory {
             // // Connect
         } else {
             this.idleTimer = setTimeout(this.close, this.connectionTimeout);
-            await this.pool.connect().catch(error => {
+            await this.pool.connect().catch((error) => {
                 // // pool.connect() error:
                 // ELOGIN (ConnectionError) - Login failed.
                 // ETIMEOUT (ConnectionError) - Connection timeout.
@@ -59,12 +61,18 @@ export class SqlFactory {
         }
     }
 
+    public functions: SQLFunctions;
+
     public static getInstance(): SqlFactory {
         return SqlFactory.instance;
     }
 
     public init(config: mssql.config) {
-        this.pool = new mssql.ConnectionPool(config);
+        return new Promise((resolve, reject) => {
+            this.pool = new mssql.ConnectionPool(config, (error) => {
+                return error ? reject(error) : resolve();
+            });
+        });
     }
 
     public close = async () => {

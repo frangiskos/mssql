@@ -19,17 +19,16 @@ const sqlConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
     options: {
-        enableArithAbort: true
-    }
+        enableArithAbort: true,
+    },
 };
-_1.sql.init(sqlConfig);
 const log = {
     start(msg) {
         console.log(`\nAsserting ${msg}...`);
     },
     end(msg) {
         console.log(`Asserting ${msg} OK`);
-    }
+    },
 };
 function runTests() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -55,7 +54,7 @@ function runTests() {
             birthdate: new Date('2000-01-01'),
             childrenCount: 2,
             salary: 2345.67,
-            isMarried: true
+            isMarried: true,
         };
         log.start('sql.q Insert data into DB');
         yield _1.sql.q(`INSERT INTO people (name, birthdate, childrenCount, salary, isMarried) 
@@ -80,7 +79,7 @@ function runTests() {
         assert(jonnyName === 'Johnny');
         log.end('sql.qv single value');
         log.start('sql.qv count');
-        const totalPersons = yield _1.sql.qv(`SELECT count(*) FROM people`);
+        let totalPersons = yield _1.sql.qv(`SELECT count(*) FROM people`);
         assert(totalPersons === 1);
         log.end('sql.qv count');
         log.start('sql.qv Error');
@@ -97,13 +96,20 @@ function runTests() {
         assert(Array.isArray(bothPersons));
         assert(bothPersons[1].birthdate === null);
         log.end('sql.q return recordset');
-        yield _1.sql.q('DROP TABLE IF EXISTS people');
+        log.start('sql.function.insertObject');
+        const personsBefore = yield _1.sql.qv(`SELECT count(*) FROM people`);
+        yield _1.sql.functions.insertObject('people', johnnyData);
+        yield _1.sql.functions.insertObject('people', [johnnyData, johnnyData, johnnyData, johnnyData]);
+        const personsAfter = yield _1.sql.qv(`SELECT count(*) FROM people`);
+        assert(personsAfter - personsBefore === 5);
+        log.end('sql.function.insertObject');
     });
 }
-runTests()
+_1.sql.init(sqlConfig)
+    .then(() => runTests())
     .then(() => console.log('Tests completed'))
     .then(_1.sql.close)
-    .catch(e => {
+    .catch((e) => {
     if (e instanceof AssertionError) {
         // Output expected AssertionErrors.
         console.error(`Assertion failed.\n- Expected: ${e.expected}\n- Got: ${e.actual}\n-Error: ${e}`);

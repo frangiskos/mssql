@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mssql = require("mssql");
+const functions_1 = require("./functions");
 class SqlFactory {
     constructor() {
         this.connectionTimeout = 30000;
@@ -32,6 +33,7 @@ class SqlFactory {
         if (SqlFactory.instance)
             throw new Error('Instantiation failed. Use .getInstance() instead of new.');
         SqlFactory.instance = this;
+        this.functions = functions_1.sqlFunctions(this);
     }
     checkConnection() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -63,7 +65,7 @@ class SqlFactory {
             }
             else {
                 this.idleTimer = setTimeout(this.close, this.connectionTimeout);
-                yield this.pool.connect().catch(error => {
+                yield this.pool.connect().catch((error) => {
                     // // pool.connect() error:
                     // ELOGIN (ConnectionError) - Login failed.
                     // ETIMEOUT (ConnectionError) - Connection timeout.
@@ -81,7 +83,11 @@ class SqlFactory {
         return SqlFactory.instance;
     }
     init(config) {
-        this.pool = new mssql.ConnectionPool(config);
+        return new Promise((resolve, reject) => {
+            this.pool = new mssql.ConnectionPool(config, (error) => {
+                return error ? reject(error) : resolve();
+            });
+        });
     }
     /** Executes query and returns the result as an array of objects */
     query(sqlStr, ...params) {

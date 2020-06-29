@@ -1,4 +1,5 @@
 import * as mssql from 'mssql';
+import { SQLFunctions } from './functions';
 export declare class SqlFactory {
     private static instance;
     private readonly connectionTimeout;
@@ -7,8 +8,9 @@ export declare class SqlFactory {
     private idleTimer;
     private constructor();
     private checkConnection;
+    functions: SQLFunctions;
     static getInstance(): SqlFactory;
-    init(config: mssql.config): void;
+    init(config: mssql.config): Promise<unknown>;
     close: () => Promise<void>;
     /** Executes query and returns the result as an array of objects */
     query<T extends any = any>(sqlStr: string, ...params: Array<string | number | boolean | Date>): Promise<mssql.IRecordSet<T>>;

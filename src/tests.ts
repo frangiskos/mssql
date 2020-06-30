@@ -1,5 +1,6 @@
 require('dotenv').config();
 import { sql, SqlConfig } from '.';
+import * as faker from 'faker';
 import * as assert from 'assert';
 const AssertionError = assert.AssertionError;
 
@@ -16,7 +17,7 @@ const sqlConfig: SqlConfig = {
 interface Person {
     id?: number;
     name: string;
-    birthdate: Date | string;
+    birthdate: Date;
     childrenCount: number;
     salary: number;
     isMarried: boolean;
@@ -53,44 +54,54 @@ async function runTests() {
     const tablePeople = await sql.q1(`SELECT OBJECT_ID('people', 'U')`);
     assert.notDeepStrictEqual(tablePeople, { '': null }, 'Table people is missing');
 
-    const johnnyData: Person = {
-        name: 'Johnny',
-        birthdate: new Date('2000-01-01'),
-        childrenCount: 2,
-        salary: 2345.67,
-        isMarried: true,
-    };
+    const personList: Person[] = [];
+    for (let i = 0; i < 1000; i++) {
+        personList.push({
+            name: faker.name.findName(),
+            birthdate: faker.date.past(50),
+            childrenCount: faker.random.number(3),
+            salary: faker.random.number({ min: 1000, max: 3000 }),
+            isMarried: faker.random.boolean(),
+        });
+    }
 
     log.start('sql.q Insert data into DB');
     await sql.q(
         `INSERT INTO people (name, birthdate, childrenCount, salary, isMarried) 
         VALUES (@P1, @P2, @P3, @P4, @P5)`,
-        johnnyData.name,
-        johnnyData.birthdate,
-        johnnyData.childrenCount,
-        johnnyData.salary,
-        johnnyData.isMarried
+        personList[0].name,
+        personList[0].birthdate,
+        personList[0].childrenCount,
+        personList[0].salary,
+        personList[0].isMarried
     );
     assert(true);
     log.end('sql.q Insert data into DB');
 
     log.start('sql.q1 Retrieve first match from DB');
-    const jonnyFromDB = await sql.q1(`SELECT * FROM people WHERE name = @P1`, 'Johnny');
+    const personFromDB = await sql.q1(
+        `SELECT * FROM people WHERE name = @P1 AND birthdate = @P2`,
+        personList[0].name,
+        personList[0].birthdate
+    );
     /** Test that the data retrieved are the same with the data inserted + id */
-    assert.deepStrictEqual(jonnyFromDB, { id: 1, ...johnnyData });
-    assert(typeof jonnyFromDB.id === 'number');
-    assert(jonnyFromDB.name === 'Johnny');
-    assert(typeof jonnyFromDB.birthdate === 'object');
-    assert((jonnyFromDB.birthdate as Date).toISOString() === '2000-01-01T00:00:00.000Z');
-    assert(typeof jonnyFromDB.salary === 'number');
-    assert(jonnyFromDB.salary === 2345.67);
-    assert(typeof jonnyFromDB.isMarried === 'boolean');
+    // assert.deepStrictEqual(personFromDB, { id: 1, ...personList[0] });
+    assert(typeof personFromDB.id === 'number');
+    assert(personFromDB.name === personList[0].name);
+    assert(typeof personFromDB.birthdate === 'object');
+    assert(
+        (personFromDB.birthdate as Date).toISOString().split('.')[0] ===
+            personList[0].birthdate.toISOString().split('.')[0]
+    );
+    assert(typeof personFromDB.salary === 'number');
+    assert(personFromDB.salary === personList[0].salary);
+    assert(typeof personFromDB.isMarried === 'boolean');
     log.end('sql.q1 Retrieve first match from DB');
 
     log.start('sql.qv single value');
-    /** Return value of the first key of the first record returned */
-    const jonnyName = await sql.qv(`SELECT name FROM people WHERE name = @P1`, 'Johnny');
-    assert(jonnyName === 'Johnny');
+    /** Returns the value of the first key of the first record returned (instead of an array of objects) */
+    const person1Name = await sql.qv(`SELECT name FROM people WHERE name = @P1`, personList[0].name);
+    assert(person1Name === personList[0].name);
     log.end('sql.qv single value');
 
     log.start('sql.qv count');
@@ -117,8 +128,10 @@ async function runTests() {
 
     log.start('sql.function.insertObject');
     const personsBefore = await sql.qv(`SELECT count(*) FROM people`);
-    await sql.functions.insertObject('people', johnnyData);
-    await sql.functions.insertObject('people', [johnnyData, johnnyData, johnnyData, johnnyData]);
+    // Insert as object
+    await sql.functions.insertObject('people', personList[1]);
+    // Insert as object array
+    await sql.functions.insertObject('people', personList.slice(2, 6));
     const personsAfter = await sql.qv(`SELECT count(*) FROM people`);
     assert(personsAfter - personsBefore === 5);
     log.end('sql.function.insertObject');

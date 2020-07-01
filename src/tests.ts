@@ -46,6 +46,8 @@ async function runTests() {
         )
         `);
 
+    await sql.q(`ALTER TABLE people ADD CONSTRAINT [DF_people_childrenCount] DEFAULT ((0)) FOR [childrenCount]`);
+
     const tableId = await sql.queryValue(`SELECT OBJECT_ID (N'people', N'U')`);
     assert(tableId !== null);
     log.end('sql.q create Table');
@@ -55,7 +57,7 @@ async function runTests() {
     assert.notDeepStrictEqual(tablePeople, { '': null }, 'Table people is missing');
 
     const personList: Person[] = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 10000; i++) {
         personList.push({
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
@@ -141,7 +143,7 @@ async function runTests() {
     const res = await sql.functions.bulkInsert('people', personList);
     console.log(`inserted ${res.rowsAffected} records in ${res.executionTime / 1000} secs.`);
     personsAfter = await sql.qv(`SELECT count(*) FROM people`);
-    // assert(personsAfter - personsBefore === 10000);
+    assert(personsAfter - personsBefore === 10000);
     log.end('sql.function.bulkInsert');
 }
 

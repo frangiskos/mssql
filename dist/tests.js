@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const _1 = require(".");
+const faker = require("faker");
 const assert = require("assert");
 const AssertionError = assert.AssertionError;
 const sqlConfig = {
@@ -49,34 +50,38 @@ function runTests() {
         /** Test that the table exists */
         const tablePeople = yield _1.sql.q1(`SELECT OBJECT_ID('people', 'U')`);
         assert.notDeepStrictEqual(tablePeople, { '': null }, 'Table people is missing');
-        const johnnyData = {
-            name: 'Johnny',
-            birthdate: new Date('2000-01-01'),
-            childrenCount: 2,
-            salary: 2345.67,
-            isMarried: true,
-        };
+        const personList = [];
+        for (let i = 0; i < 1000; i++) {
+            personList.push({
+                name: faker.name.findName(),
+                birthdate: faker.date.past(50),
+                childrenCount: faker.random.number(3),
+                salary: faker.random.number({ min: 1000, max: 3000 }),
+                isMarried: faker.random.boolean(),
+            });
+        }
         log.start('sql.q Insert data into DB');
         yield _1.sql.q(`INSERT INTO people (name, birthdate, childrenCount, salary, isMarried) 
-        VALUES (@P1, @P2, @P3, @P4, @P5)`, johnnyData.name, johnnyData.birthdate, johnnyData.childrenCount, johnnyData.salary, johnnyData.isMarried);
+        VALUES (@P1, @P2, @P3, @P4, @P5)`, personList[0].name, personList[0].birthdate, personList[0].childrenCount, personList[0].salary, personList[0].isMarried);
         assert(true);
         log.end('sql.q Insert data into DB');
         log.start('sql.q1 Retrieve first match from DB');
-        const jonnyFromDB = yield _1.sql.q1(`SELECT * FROM people WHERE name = @P1`, 'Johnny');
+        const personFromDB = yield _1.sql.q1(`SELECT * FROM people WHERE name = @P1 AND birthdate = @P2`, personList[0].name, personList[0].birthdate);
         /** Test that the data retrieved are the same with the data inserted + id */
-        assert.deepStrictEqual(jonnyFromDB, Object.assign({ id: 1 }, johnnyData));
-        assert(typeof jonnyFromDB.id === 'number');
-        assert(jonnyFromDB.name === 'Johnny');
-        assert(typeof jonnyFromDB.birthdate === 'object');
-        assert(jonnyFromDB.birthdate.toISOString() === '2000-01-01T00:00:00.000Z');
-        assert(typeof jonnyFromDB.salary === 'number');
-        assert(jonnyFromDB.salary === 2345.67);
-        assert(typeof jonnyFromDB.isMarried === 'boolean');
+        // assert.deepStrictEqual(personFromDB, { id: 1, ...personList[0] });
+        assert(typeof personFromDB.id === 'number');
+        assert(personFromDB.name === personList[0].name);
+        assert(typeof personFromDB.birthdate === 'object');
+        assert(personFromDB.birthdate.toISOString().split('.')[0] ===
+            personList[0].birthdate.toISOString().split('.')[0]);
+        assert(typeof personFromDB.salary === 'number');
+        assert(personFromDB.salary === personList[0].salary);
+        assert(typeof personFromDB.isMarried === 'boolean');
         log.end('sql.q1 Retrieve first match from DB');
         log.start('sql.qv single value');
-        /** Return value of the first key of the first record returned */
-        const jonnyName = yield _1.sql.qv(`SELECT name FROM people WHERE name = @P1`, 'Johnny');
-        assert(jonnyName === 'Johnny');
+        /** Returns the value of the first key of the first record returned (instead of an array of objects) */
+        const person1Name = yield _1.sql.qv(`SELECT name FROM people WHERE name = @P1`, personList[0].name);
+        assert(person1Name === personList[0].name);
         log.end('sql.qv single value');
         log.start('sql.qv count');
         let totalPersons = yield _1.sql.qv(`SELECT count(*) FROM people`);
@@ -98,8 +103,10 @@ function runTests() {
         log.end('sql.q return recordset');
         log.start('sql.function.insertObject');
         const personsBefore = yield _1.sql.qv(`SELECT count(*) FROM people`);
-        yield _1.sql.functions.insertObject('people', johnnyData);
-        yield _1.sql.functions.insertObject('people', [johnnyData, johnnyData, johnnyData, johnnyData]);
+        // Insert as object
+        yield _1.sql.functions.insertObject('people', personList[1]);
+        // Insert as object array
+        yield _1.sql.functions.insertObject('people', personList.slice(2, 6));
         const personsAfter = yield _1.sql.qv(`SELECT count(*) FROM people`);
         assert(personsAfter - personsBefore === 5);
         log.end('sql.function.insertObject');

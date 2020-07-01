@@ -25,6 +25,30 @@ function sqlFunctions(sql) {
                 }
             });
         },
+        bulkInsert(tableName, data) {
+            return __awaiter(this, void 0, void 0, function* () {
+                try {
+                    const recordSet = yield sql.q(`SELECT TOP(0) ${Object.keys(data[0]).join(', ')} FROM ${tableName}`);
+                    const table = recordSet.toTable(tableName);
+                    for (const record of data) {
+                        table.rows.add(...Object.keys(record).map((key) => record[key]));
+                    }
+                    const request = new sql.request(sql.pool);
+                    const t1 = Date.now();
+                    return new Promise((resolve, reject) => {
+                        request.bulk(table, (error, result) => {
+                            if (error)
+                                return reject(error);
+                            const executionTime = Math.round(Date.now() - t1);
+                            return resolve(Object.assign(Object.assign({}, result), { executionTime }));
+                        });
+                    });
+                }
+                catch (error) {
+                    throw new Error(`Bulk import to ${tableName} failed. \n${error}`);
+                }
+            });
+        },
     };
 }
 exports.sqlFunctions = sqlFunctions;

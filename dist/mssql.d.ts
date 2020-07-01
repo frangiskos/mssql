@@ -1,12 +1,14 @@
 import * as mssql from 'mssql';
 import { SQLFunctions } from './functions';
-declare type ParamType = string | number | boolean | Date;
+export declare type ParamType = string | number | boolean | Date;
 export declare class SqlFactory {
     private static instance;
     private readonly connectionTimeout;
-    private pool;
+    private _pool;
     private timerReset;
     private idleTimer;
+    get pool(): mssql.ConnectionPool;
+    get request(): typeof mssql.Request;
     private constructor();
     private checkConnection;
     functions: SQLFunctions;
@@ -37,4 +39,3 @@ export declare class SqlFactory {
 export interface SqlConfig extends mssql.config {
 }
 export declare const sql: SqlFactory;
-export {};

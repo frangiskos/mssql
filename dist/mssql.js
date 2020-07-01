@@ -20,7 +20,7 @@ class SqlFactory {
         };
         this.close = () => __awaiter(this, void 0, void 0, function* () {
             this.idleTimer && clearTimeout(this.idleTimer);
-            this.pool && (yield this.pool.close());
+            this._pool && (yield this._pool.close());
         });
         /** Alias to query */
         this.q = this.query;
@@ -35,10 +35,16 @@ class SqlFactory {
         SqlFactory.instance = this;
         this.functions = functions_1.sqlFunctions(this);
     }
+    get pool() {
+        if (!this._pool)
+            throw new Error('SQL not initialized. Use sql.init(config) first');
+        return this._pool;
+    }
+    get request() {
+        return mssql.Request;
+    }
     checkConnection() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!this.pool)
-                throw new Error('SQL not initialized. Use sql.init(config) first');
             // // Already connected
             if (this.pool.connected) {
                 this.timerReset();
@@ -48,7 +54,7 @@ class SqlFactory {
                 // wait up to 10 sec to connect or reject
                 yield new Promise((resolve, reject) => {
                     const handler = () => {
-                        if (this.pool && this.pool.connected) {
+                        if (this._pool && this._pool.connected) {
                             clearInterval(waiting);
                             clearTimeout(expireTimeout);
                             this.timerReset();
@@ -84,7 +90,7 @@ class SqlFactory {
     }
     init(config) {
         return new Promise((resolve, reject) => {
-            this.pool = new mssql.ConnectionPool(config, (error) => {
+            this._pool = new mssql.ConnectionPool(config, (error) => {
                 return error ? reject(error) : resolve();
             });
         });

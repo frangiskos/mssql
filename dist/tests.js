@@ -44,6 +44,7 @@ function runTests() {
         isMarried bit
         )
         `);
+        yield _1.sql.q(`ALTER TABLE people ADD CONSTRAINT [DF_people_childrenCount] DEFAULT ((0)) FOR [childrenCount]`);
         const tableId = yield _1.sql.queryValue(`SELECT OBJECT_ID (N'people', N'U')`);
         assert(tableId !== null);
         log.end('sql.q create Table');
@@ -51,7 +52,7 @@ function runTests() {
         const tablePeople = yield _1.sql.q1(`SELECT OBJECT_ID('people', 'U')`);
         assert.notDeepStrictEqual(tablePeople, { '': null }, 'Table people is missing');
         const personList = [];
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 10000; i++) {
             personList.push({
                 name: faker.name.findName(),
                 birthdate: faker.date.past(50),
@@ -102,14 +103,21 @@ function runTests() {
         assert(bothPersons[1].birthdate === null);
         log.end('sql.q return recordset');
         log.start('sql.function.insertObject');
-        const personsBefore = yield _1.sql.qv(`SELECT count(*) FROM people`);
+        let personsBefore = yield _1.sql.qv(`SELECT count(*) FROM people`);
         // Insert as object
         yield _1.sql.functions.insertObject('people', personList[1]);
         // Insert as object array
         yield _1.sql.functions.insertObject('people', personList.slice(2, 6));
-        const personsAfter = yield _1.sql.qv(`SELECT count(*) FROM people`);
+        let personsAfter = yield _1.sql.qv(`SELECT count(*) FROM people`);
         assert(personsAfter - personsBefore === 5);
         log.end('sql.function.insertObject');
+        log.start('sql.function.bulkInsert');
+        personsBefore = yield _1.sql.qv(`SELECT count(*) FROM people`);
+        const res = yield _1.sql.functions.bulkInsert('people', personList);
+        console.log(`inserted ${res.rowsAffected} records in ${res.executionTime / 1000} secs.`);
+        personsAfter = yield _1.sql.qv(`SELECT count(*) FROM people`);
+        assert(personsAfter - personsBefore === 10000);
+        log.end('sql.function.bulkInsert');
     });
 }
 _1.sql.init(sqlConfig)

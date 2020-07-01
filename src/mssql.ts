@@ -1,18 +1,27 @@
 import * as mssql from 'mssql';
 import { sqlFunctions, SQLFunctions } from './functions';
 
-type ParamType = string | number | boolean | Date;
+export type ParamType = string | number | boolean | Date;
 
 export class SqlFactory {
     private static instance: SqlFactory = new SqlFactory();
     private readonly connectionTimeout = 30000;
-    private pool: mssql.ConnectionPool | undefined;
+    private _pool: mssql.ConnectionPool | undefined;
 
     private timerReset = () => {
         clearTimeout(this.idleTimer);
         this.idleTimer = setTimeout(this.close, this.connectionTimeout);
     };
     private idleTimer: any;
+
+    public get pool() {
+        if (!this._pool) throw new Error('SQL not initialized. Use sql.init(config) first');
+        return this._pool;
+    }
+
+    public get request() {
+        return mssql.Request;
+    }
 
     private constructor() {
         if (SqlFactory.instance) throw new Error('Instantiation failed. Use .getInstance() instead of new.');
@@ -21,8 +30,6 @@ export class SqlFactory {
     }
 
     private async checkConnection() {
-        if (!this.pool) throw new Error('SQL not initialized. Use sql.init(config) first');
-
         // // Already connected
         if (this.pool.connected) {
             this.timerReset();
@@ -32,7 +39,7 @@ export class SqlFactory {
             // wait up to 10 sec to connect or reject
             await new Promise((resolve, reject) => {
                 const handler = () => {
-                    if (this.pool && this.pool.connected) {
+                    if (this._pool && this._pool.connected) {
                         clearInterval(waiting);
                         clearTimeout(expireTimeout);
                         this.timerReset();
@@ -71,7 +78,7 @@ export class SqlFactory {
 
     public init(config: mssql.config) {
         return new Promise((resolve, reject) => {
-            this.pool = new mssql.ConnectionPool(config, (error) => {
+            this._pool = new mssql.ConnectionPool(config, (error) => {
                 return error ? reject(error) : resolve();
             });
         });
@@ -79,7 +86,7 @@ export class SqlFactory {
 
     public close = async () => {
         this.idleTimer && clearTimeout(this.idleTimer);
-        this.pool && (await this.pool.close());
+        this._pool && (await this._pool.close());
     };
 
     /** Executes query and returns the result as an array of objects */

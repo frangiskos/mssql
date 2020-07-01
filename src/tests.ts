@@ -46,6 +46,8 @@ async function runTests() {
         )
         `);
 
+    await sql.q(`ALTER TABLE people ADD CONSTRAINT [DF_people_childrenCount] DEFAULT ((0)) FOR [childrenCount]`);
+
     const tableId = await sql.queryValue(`SELECT OBJECT_ID (N'people', N'U')`);
     assert(tableId !== null);
     log.end('sql.q create Table');
@@ -55,7 +57,7 @@ async function runTests() {
     assert.notDeepStrictEqual(tablePeople, { '': null }, 'Table people is missing');
 
     const personList: Person[] = [];
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10000; i++) {
         personList.push({
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
@@ -127,14 +129,22 @@ async function runTests() {
     log.end('sql.q return recordset');
 
     log.start('sql.function.insertObject');
-    const personsBefore = await sql.qv(`SELECT count(*) FROM people`);
+    let personsBefore = await sql.qv(`SELECT count(*) FROM people`);
     // Insert as object
     await sql.functions.insertObject('people', personList[1]);
     // Insert as object array
     await sql.functions.insertObject('people', personList.slice(2, 6));
-    const personsAfter = await sql.qv(`SELECT count(*) FROM people`);
+    let personsAfter = await sql.qv(`SELECT count(*) FROM people`);
     assert(personsAfter - personsBefore === 5);
     log.end('sql.function.insertObject');
+
+    log.start('sql.function.bulkInsert');
+    personsBefore = await sql.qv(`SELECT count(*) FROM people`);
+    const res = await sql.functions.bulkInsert('people', personList);
+    console.log(`inserted ${res.rowsAffected} records in ${res.executionTime / 1000} secs.`);
+    personsAfter = await sql.qv(`SELECT count(*) FROM people`);
+    assert(personsAfter - personsBefore === 10000);
+    log.end('sql.function.bulkInsert');
 }
 
 sql.init(sqlConfig)

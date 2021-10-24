@@ -128,4 +128,47 @@ await sql.functions.insertObject('people', {
 });
 ```
 
+BULK INSERT FUNCTION
+
+```typescript
+await sql.functions.bulkInsert('people', [
+    {
+        name: 'Mike',
+        birthdate: '2000-02-03',
+        childrenCount: 0,
+        salary: 3000,
+        isMarried: false,
+    },
+]);
+```
+
+MERGE TABLES FUNCTION
+
+```typescript
+await sql.functions.mergeTables('srcTable', 'destTable', {
+    matchFields: ['InvoiceNumber'],
+    insertFields: ['InvoiceDate', 'amount'],
+    updateFields: ['amount'],
+    deleteNotMatching: true,
+});
+```
+
+MERGE VALUES FUNCTION
+
+```typescript
+await sql.functions.mergeTables(
+    'srcTable',
+    [
+        { InvoiceNumber: 1000, InvoiceDate: new Date(), amount: 5000 },
+        { InvoiceNumber: 1001, InvoiceDate: new Date(), amount: 10000 },
+    ],
+    {
+        matchFields: ['InvoiceNumber'],
+        insertFields: ['InvoiceDate', 'amount'],
+        updateFields: ['amount'],
+        deleteNotMatching: false,
+    }
+);
+```
+
 See ./src/tests.ts for more examples.

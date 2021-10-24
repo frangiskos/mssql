@@ -40,3 +40,16 @@ Initial release
 
 -   Introduced a new "functions" concept for helper functions with non-standard sql commands
 -   new function to insert an object in database. The keys of the object should be the same as the db table. sql.function.insertObject(TableName: string, Obj: {[key: string]: any})
+
+## [0.4.0] - July 02, 2020
+
+### Added
+
+-   Added new function `sql.function.bulkInsert` for inserting data in a table in bulk
+
+## [0.5.0] - October 24, 2021
+
+### Added
+
+-   Added new function `sql.function.mergeTables` for merging 2 DB tables
+-   Added new function `sql.function.mergeValues` for merging a data object into a DB table

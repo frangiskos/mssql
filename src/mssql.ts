@@ -2,7 +2,6 @@ import * as mssql from 'mssql';
 import { sqlFunctions, SQLFunctions } from './functions';
 
 export type ParamType = string | number | boolean | Date;
-
 export class SqlFactory {
     private static instance: SqlFactory = new SqlFactory();
     private readonly connectionTimeout = 30000;
@@ -98,40 +97,8 @@ export class SqlFactory {
 
             const request = new mssql.Request(this.pool);
 
-            let paramType:
-                | mssql.ISqlTypeFactoryWithNoParams
-                | mssql.ISqlTypeFactoryWithLength
-                | mssql.ISqlTypeFactoryWithPrecisionScale;
-
             params.forEach((p, ix) => {
-                switch (typeof p) {
-                    case 'string':
-                        paramType = mssql.NVarChar;
-                        break;
-                    case 'boolean':
-                        paramType = mssql.Bit;
-                        break;
-                    case 'number':
-                        if (Number.isInteger(p as number)) {
-                            paramType = mssql.Int;
-                        } else {
-                            paramType = mssql.Money;
-                        }
-                        break;
-                    case 'object': {
-                        if (p && Object.prototype.toString.call(p) === '[object Date]' && !isNaN(+p)) {
-                            paramType = mssql.DateTime;
-                            break;
-                        } else {
-                            paramType = mssql.NVarChar;
-                            break;
-                        }
-                    }
-                    default:
-                        paramType = mssql.NVarChar;
-                        break;
-                }
-                request.input(`P${ix + 1}`, paramType, p);
+                request.input(`P${ix + 1}`, JsTypeToSqlType(p), p);
             });
 
             try {
@@ -204,6 +171,42 @@ export class SqlFactory {
 
     /** Alias to insertReturnIdentity */
     public ii = this.insertReturnIdentity;
+}
+
+function JsTypeToSqlType(param: any) {
+    let sqlType:
+        | mssql.ISqlTypeFactoryWithNoParams
+        | mssql.ISqlTypeFactoryWithLength
+        | mssql.ISqlTypeFactoryWithPrecisionScale;
+
+    switch (typeof param) {
+        case 'string':
+            sqlType = mssql.NVarChar;
+            break;
+        case 'boolean':
+            sqlType = mssql.Bit;
+            break;
+        case 'number':
+            if (Number.isInteger(param as number)) {
+                sqlType = mssql.Int;
+            } else {
+                sqlType = mssql.Money;
+            }
+            break;
+        case 'object': {
+            if (param && Object.prototype.toString.call(param) === '[object Date]' && !isNaN(+param)) {
+                sqlType = mssql.DateTime;
+                break;
+            } else {
+                sqlType = mssql.NVarChar;
+                break;
+            }
+        }
+        default:
+            sqlType = mssql.NVarChar;
+            break;
+    }
+    return sqlType;
 }
 
 export interface SqlConfig extends mssql.config {}

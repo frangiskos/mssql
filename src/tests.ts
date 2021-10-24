@@ -32,7 +32,7 @@ const log = {
     },
 };
 
-async function runTests() {
+async function prepareSampleData() {
     log.start('sql.q create Table');
     await sql.q('DROP TABLE IF EXISTS people');
 
@@ -52,10 +52,26 @@ async function runTests() {
     assert(tableId !== null);
     log.end('sql.q create Table');
 
+    log.start('sql.q create Table 2');
+    await sql.q('DROP TABLE IF EXISTS morePeople');
+
+    await sql.q(`CREATE TABLE morePeople (
+        id int IDENTITY(1,1),
+        name nvarchar(100),
+        birthdate datetime,
+        childrenCount int,
+        salary money,
+        isMarried bit
+        )
+        `);
+    log.end('sql.q create Table 2');
+
     /** Test that the table exists */
     const tablePeople = await sql.q1(`SELECT OBJECT_ID('people', 'U')`);
     assert.notDeepStrictEqual(tablePeople, { '': null }, 'Table people is missing');
+}
 
+async function runTests() {
     const personList: Person[] = [];
     for (let i = 0; i < 10000; i++) {
         personList.push({
@@ -140,17 +156,96 @@ async function runTests() {
 
     log.start('sql.function.bulkInsert');
     personsBefore = await sql.qv(`SELECT count(*) FROM people`);
-    const res = await sql.functions.bulkInsert('people', personList);
-    console.log(`inserted ${res.rowsAffected} records in ${res.executionTime / 1000} secs.`);
+    const bulkInsertResults = await sql.functions.bulkInsert('people', personList);
+    console.log(
+        `inserted ${bulkInsertResults.rowsAffected} records in ${bulkInsertResults.executionTime / 1000} secs.`
+    );
     personsAfter = await sql.qv(`SELECT count(*) FROM people`);
     assert(personsAfter - personsBefore === 10000);
     log.end('sql.function.bulkInsert');
+
+    log.start('sql.function.mergeTables');
+    const morePeopleData = [
+        {
+            name: faker.name.findName(),
+            birthdate: faker.date.past(50),
+            childrenCount: faker.random.number(3),
+            salary: faker.random.number({ min: 1000, max: 3000 }),
+            isMarried: faker.random.boolean(),
+        },
+        {
+            name: faker.name.findName(),
+            birthdate: faker.date.past(50),
+            childrenCount: faker.random.number(3),
+            salary: faker.random.number({ min: 1000, max: 3000 }),
+            isMarried: faker.random.boolean(),
+        },
+    ];
+    await sql.functions.insertObject('morePeople', morePeopleData);
+    const mergeTablesResult = await sql.functions.mergeTables('morePeople', 'people', {
+        matchFields: ['id'],
+        insertFields: ['name', 'birthdate', 'childrenCount', 'salary', 'isMarried'],
+        deleteNotMatching: true,
+    });
+    console.log(
+        `inserted ${mergeTablesResult.INSERT}, updated ${mergeTablesResult.UPDATE}, deleted ${
+            mergeTablesResult.DELETE
+        } records in ${mergeTablesResult.executionTime / 1000} secs.`
+    );
+    // Check that we have only 2 records in people's table
+    assert((await sql.qv(`SELECT COUNT(*) FROM people`)) === 2);
+    // Check that the name of the first person has been updated
+    assert(
+        (await sql.qv(`SELECT name FROM people WHERE id = 1`)) ===
+            (await sql.qv(`SELECT name FROM morePeople WHERE id = 1`))
+    );
+    log.end('sql.function.mergeTables');
+
+    log.start('sql.function.mergeValues');
+    const toMerge = [
+        {
+            id: 1, // update existing record
+            name: faker.name.findName(),
+            birthdate: faker.date.past(50),
+            childrenCount: faker.random.number(3),
+            salary: faker.random.number({ min: 1000, max: 3000 }),
+            isMarried: faker.random.boolean(),
+        },
+        {
+            id: 99999, // insert new record
+            name: faker.name.findName(),
+            birthdate: faker.date.past(50),
+            childrenCount: faker.random.number(3),
+            salary: faker.random.number({ min: 1000, max: 3000 }),
+            isMarried: faker.random.boolean(),
+        },
+    ];
+    const mergeValuesResults = await sql.functions.mergeValues(toMerge, 'people', {
+        matchFields: ['id'],
+        insertFields: ['name', 'birthdate,childrenCount', 'salary', 'isMarried'],
+        updateFields: ['name'],
+        // deleteNotMatching: true,
+    });
+    console.log(
+        `inserted ${mergeValuesResults.INSERT}, updated ${mergeValuesResults.UPDATE}, deleted ${
+            mergeValuesResults.DELETE
+        } records in ${mergeValuesResults.executionTime / 1000} secs.`
+    );
+    assert((await sql.qv(`SELECT name FROM people WHERE id = 1`)) === toMerge[0].name);
+    log.end('sql.function.mergeValues');
+}
+
+async function cleanup() {
+    await sql.q('DROP TABLE IF EXISTS people');
+    await sql.q('DROP TABLE IF EXISTS morePeople');
 }
 
 sql.init(sqlConfig)
+    .then(() => prepareSampleData())
     .then(() => runTests())
-    .then(() => console.log('Tests completed'))
+    .then(() => cleanup())
     .then(sql.close)
+    .then(() => console.log('\n\nTests completed'))
     .catch((e) => {
         if (e instanceof AssertionError) {
             // Output expected AssertionErrors.

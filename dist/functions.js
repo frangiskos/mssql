@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sqlFunctions = void 0;
 function sqlFunctions(sql) {
     return {
         async insertObject(tableName, data) {
@@ -41,10 +42,10 @@ function sqlFunctions(sql) {
             const recordSet = await sql.q(`SELECT TOP(0) * FROM ${sourceTable}`);
             const columns = Object.keys(recordSet.columns);
             const matchFieldsString = matchFields.map((f) => `T.${f} = S.${f}`).join(' AND ');
-            const updateFieldsString = ((updateFields !== null && updateFields !== void 0 ? updateFields : columns.filter((f) => matchFields.indexOf(f) === -1)))
+            const updateFieldsString = (updateFields !== null && updateFields !== void 0 ? updateFields : columns.filter((f) => matchFields.indexOf(f) === -1))
                 .map((f) => `T.${f} = S.${f}`)
                 .join(', ');
-            const insertFieldsArray = (insertFields !== null && insertFields !== void 0 ? insertFields : [...columns]);
+            const insertFieldsArray = insertFields !== null && insertFields !== void 0 ? insertFields : [...columns];
             const result = await sql.q(`
             MERGE ${targetTable} WITH (SERIALIZABLE) AS T
             USING ${sourceTable} AS S
@@ -105,10 +106,10 @@ function sqlFunctions(sql) {
                 return `(${val.join(',')})`;
             });
             const matchFieldsString = matchFields.map((f) => `T.${f} = S.${f}`).join(' AND ');
-            const updateFieldsString = ((updateFields !== null && updateFields !== void 0 ? updateFields : Object.keys(data[0]).filter((f) => matchFields.indexOf(f) === -1)))
+            const updateFieldsString = (updateFields !== null && updateFields !== void 0 ? updateFields : Object.keys(data[0]).filter((f) => matchFields.indexOf(f) === -1))
                 .map((f) => `T.${f} = S.${f}`)
                 .join(', ');
-            const insertFieldsArray = (insertFields !== null && insertFields !== void 0 ? insertFields : Object.keys(data[0]));
+            const insertFieldsArray = insertFields !== null && insertFields !== void 0 ? insertFields : Object.keys(data[0]);
             const result = await sql.q(`
             MERGE ${targetTable} WITH (SERIALIZABLE) AS T
             USING (VALUES ${values.join(', ')}) AS S (${columns.join(', ')})

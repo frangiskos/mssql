@@ -10,6 +10,7 @@ const sqlConfig: SqlConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
     options: {
+        trustServerCertificate: true,
         enableArithAbort: true,
     },
 };
@@ -77,9 +78,9 @@ async function runTests() {
         personList.push({
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
-            childrenCount: faker.random.number(3),
-            salary: faker.random.number({ min: 1000, max: 3000 }),
-            isMarried: faker.random.boolean(),
+            childrenCount: faker.datatype.number(3),
+            salary: faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker.datatype.boolean(),
         });
     }
 
@@ -169,16 +170,16 @@ async function runTests() {
         {
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
-            childrenCount: faker.random.number(3),
-            salary: faker.random.number({ min: 1000, max: 3000 }),
-            isMarried: faker.random.boolean(),
+            childrenCount: faker.datatype.number(3),
+            salary: faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker.datatype.boolean(),
         },
         {
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
-            childrenCount: faker.random.number(3),
-            salary: faker.random.number({ min: 1000, max: 3000 }),
-            isMarried: faker.random.boolean(),
+            childrenCount: faker.datatype.number(3),
+            salary: faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker.datatype.boolean(),
         },
     ];
     await sql.functions.insertObject('morePeople', morePeopleData);
@@ -207,17 +208,17 @@ async function runTests() {
             id: 1, // update existing record
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
-            childrenCount: faker.random.number(3),
-            salary: faker.random.number({ min: 1000, max: 3000 }),
-            isMarried: faker.random.boolean(),
+            childrenCount: faker.datatype.number(3),
+            salary: faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker.datatype.boolean(),
         },
         {
             id: 99999, // insert new record
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
-            childrenCount: faker.random.number(3),
-            salary: faker.random.number({ min: 1000, max: 3000 }),
-            isMarried: faker.random.boolean(),
+            childrenCount: faker.datatype.number(3),
+            salary: faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker.datatype.boolean(),
         },
     ];
     const mergeValuesResults = await sql.functions.mergeValues(toMerge, 'people', {

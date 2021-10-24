@@ -36,7 +36,7 @@ export class SqlFactory {
             // // Wait for connection
         } else if (this.pool.connecting) {
             // wait up to 10 sec to connect or reject
-            await new Promise((resolve, reject) => {
+            await new Promise<void>((resolve, reject) => {
                 const handler = () => {
                     if (this._pool && this._pool.connected) {
                         clearInterval(waiting);
@@ -76,7 +76,7 @@ export class SqlFactory {
     }
 
     public init(config: mssql.config) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             this._pool = new mssql.ConnectionPool(config, (error) => {
                 return error ? reject(error) : resolve();
             });

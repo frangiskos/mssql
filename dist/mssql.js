@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sql = exports.SqlFactory = void 0;
 const mssql = require("mssql");
 const functions_1 = require("./functions");
 class SqlFactory {
@@ -24,7 +25,7 @@ class SqlFactory {
         if (SqlFactory.instance)
             throw new Error('Instantiation failed. Use .getInstance() instead of new.');
         SqlFactory.instance = this;
-        this.functions = functions_1.sqlFunctions(this);
+        this.functions = (0, functions_1.sqlFunctions)(this);
     }
     get pool() {
         if (!this._pool)

@@ -13,7 +13,7 @@ export declare class SqlFactory {
     private checkConnection;
     functions: SQLFunctions;
     static getInstance(): SqlFactory;
-    init(config: mssql.config): Promise<unknown>;
+    init(config: mssql.config): Promise<void>;
     close: () => Promise<void>;
     /** Executes query and returns the result as an array of objects */
     query<T extends any = any>(sqlStr: string, ...params: Array<ParamType>): Promise<mssql.IRecordSet<T>>;
@@ -28,13 +28,13 @@ export declare class SqlFactory {
     /** Executes an Insert query and returns the identity of the record inserted */
     insertReturnIdentity(sqlStr: string, ...params: Array<ParamType>): Promise<number | null>;
     /** Alias to query */
-    q: <T extends any = any>(sqlStr: string, ...params: ParamType[]) => Promise<mssql.IRecordSet<T>>;
+    q: <T extends unknown = any>(sqlStr: string, ...params: Array<ParamType>) => Promise<mssql.IRecordSet<T>>;
     /** Alias to queryOne */
-    q1: <T extends {} = any>(sqlStr: string, ...params: ParamType[]) => Promise<T | null>;
+    q1: <T extends {} = any>(sqlStr: string, ...params: Array<ParamType>) => Promise<T | null>;
     /** Alias to queryValue */
-    qv: <T extends string | number | boolean | Date | null = any>(sqlStr: string, ...params: ParamType[]) => Promise<T>;
+    qv: <T extends ParamType | null = any>(sqlStr: string, ...params: Array<ParamType>) => Promise<T>;
     /** Alias to insertReturnIdentity */
-    ii: (sqlStr: string, ...params: ParamType[]) => Promise<number | null>;
+    ii: (sqlStr: string, ...params: Array<ParamType>) => Promise<number | null>;
 }
 export interface SqlConfig extends mssql.config {
 }

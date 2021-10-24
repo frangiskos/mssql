@@ -53,3 +53,9 @@ Initial release
 
 -   Added new function `sql.function.mergeTables` for merging 2 DB tables
 -   Added new function `sql.function.mergeValues` for merging a data object into a DB table
+
+## [0.5.1] - October 24, 2021
+
+### Changed
+
+-   Update dependencies

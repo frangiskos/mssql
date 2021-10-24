@@ -11,6 +11,7 @@ const sqlConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
     options: {
+        trustServerCertificate: true,
         enableArithAbort: true,
     },
 };
@@ -60,9 +61,9 @@ async function runTests() {
         personList.push({
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
-            childrenCount: faker.random.number(3),
-            salary: faker.random.number({ min: 1000, max: 3000 }),
-            isMarried: faker.random.boolean(),
+            childrenCount: faker.datatype.number(3),
+            salary: faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker.datatype.boolean(),
         });
     }
     log.start('sql.q Insert data into DB');
@@ -127,16 +128,16 @@ async function runTests() {
         {
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
-            childrenCount: faker.random.number(3),
-            salary: faker.random.number({ min: 1000, max: 3000 }),
-            isMarried: faker.random.boolean(),
+            childrenCount: faker.datatype.number(3),
+            salary: faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker.datatype.boolean(),
         },
         {
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
-            childrenCount: faker.random.number(3),
-            salary: faker.random.number({ min: 1000, max: 3000 }),
-            isMarried: faker.random.boolean(),
+            childrenCount: faker.datatype.number(3),
+            salary: faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker.datatype.boolean(),
         },
     ];
     await _1.sql.functions.insertObject('morePeople', morePeopleData);
@@ -158,23 +159,24 @@ async function runTests() {
             id: 1,
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
-            childrenCount: faker.random.number(3),
-            salary: faker.random.number({ min: 1000, max: 3000 }),
-            isMarried: faker.random.boolean(),
+            childrenCount: faker.datatype.number(3),
+            salary: faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker.datatype.boolean(),
         },
         {
             id: 99999,
             name: faker.name.findName(),
             birthdate: faker.date.past(50),
-            childrenCount: faker.random.number(3),
-            salary: faker.random.number({ min: 1000, max: 3000 }),
-            isMarried: faker.random.boolean(),
+            childrenCount: faker.datatype.number(3),
+            salary: faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker.datatype.boolean(),
         },
     ];
     const mergeValuesResults = await _1.sql.functions.mergeValues(toMerge, 'people', {
         matchFields: ['id'],
         insertFields: ['name', 'birthdate,childrenCount', 'salary', 'isMarried'],
         updateFields: ['name'],
+        // deleteNotMatching: true,
     });
     console.log(`inserted ${mergeValuesResults.INSERT}, updated ${mergeValuesResults.UPDATE}, deleted ${mergeValuesResults.DELETE} records in ${mergeValuesResults.executionTime / 1000} secs.`);
     assert((await _1.sql.qv(`SELECT name FROM people WHERE id = 1`)) === toMerge[0].name);

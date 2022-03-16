@@ -1,6 +1,6 @@
 {
     "name": "@frangiskos/mssql",
-    "version": "0.5.1",
+    "version": "0.6.0",
     "description": "Connect to an MS-SQL server and run queries using a simple API",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -19,6 +19,7 @@
         "sql",
         "sqlserver",
         "node-sqlserver",
+        "Microsoft SQL Server",
         "node-mssql"
     ],
     "repository": {
@@ -32,8 +33,8 @@
     },
     "homepage": "https://github.com/frangiskos/mssql",
     "dependencies": {
-        "@types/mssql": "^7.1.4",
-        "mssql": "^7.2.1"
+        "@types/mssql": "^7.1.5",
+        "mssql": "^8.0.2"
     },
     "devDependencies": {
         "@types/faker": "^5.5.9",

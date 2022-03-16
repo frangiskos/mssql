@@ -37,6 +37,8 @@ export interface SQLFunctions {
         updateFields?: string[];
         /** if sets to TRUE it deletes any records in the destination table that are not matched with source */
         deleteNotMatching?: boolean;
+        /** if sets to TRUE it will keep the temp table `tmp_merge_${targetTable}` that is created on bulk data insert */
+        keepTmpTable?: boolean;
     }) => Promise<{
         INSERT: number;
         UPDATE: number;

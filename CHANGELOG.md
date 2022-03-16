@@ -59,3 +59,13 @@ Initial release
 ### Changed
 
 -   Update dependencies
+
+## [0.6.0] - March 16, 2022
+
+### Fixed
+
+-   `sql.function.mergeValues` was not working properly
+
+### Changed
+
+-   Update dependencies

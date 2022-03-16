@@ -53,9 +53,12 @@ try {
 
 ### SQL Functions
 
-SQL Functions are special methods that make it easier to work with sql in some cases.
+SQL Functions are special methods that make it easier to work with sql.
 
 -   sql.functions.insertObject: Inserts an object or an array of objects in database by matching object keys with database column names
+-   sql.functions.bulkInsert: Given an array of objects, it will insert them in database in bulk
+-   sql.functions.mergeTables: Given two tables, it will merge them. The first table will be the base table, the second will be the table to merge with
+-   sql.functions.mergeValues: Given an array of objects and a destination table, it will merge the objects with the destination table. The objects will be matched by matching object keys with database column names. mergeValues works as a combination of bulkInsert and mergeTables. It will create a table named `tmp_merge_${targetTable}` and insert the objects in bulk. Then it will merge the `tmp_merge_${targetTable}` table with the target table.
 
 ### Examples
 
@@ -156,12 +159,12 @@ await sql.functions.mergeTables('srcTable', 'destTable', {
 MERGE VALUES FUNCTION
 
 ```typescript
-await sql.functions.mergeTables(
-    'srcTable',
+await sql.functions.mergeValues(
     [
         { InvoiceNumber: 1000, InvoiceDate: new Date(), amount: 5000 },
         { InvoiceNumber: 1001, InvoiceDate: new Date(), amount: 10000 },
     ],
+    'destTable',
     {
         matchFields: ['InvoiceNumber'],
         insertFields: ['InvoiceDate', 'amount'],

@@ -18,10 +18,18 @@ function sqlFunctions(sql) {
         async bulkInsert(tableName, data) {
             try {
                 const t1 = Date.now();
-                const recordSet = await sql.q(`SELECT TOP(0) ${Object.keys(data[0]).join(', ')} FROM ${tableName}`);
+                // We need to check if there are any objects with missing keys, and if so, add them with null values
+                const keys = data
+                    .reduce((acc, cur) => [...new Set(acc.concat(Object.keys(cur)))], [])
+                    .sort();
+                const nullObject = {};
+                keys.forEach((k) => (nullObject[k] = null));
+                const recordSet = await sql.q(`SELECT TOP(0) ${keys.join(', ')} FROM ${tableName}`);
                 const table = recordSet.toTable(tableName);
                 for (const record of data) {
-                    table.rows.add(...Object.keys(record).map((key) => record[key]));
+                    table.rows.add(...Object.keys(Object.assign(Object.assign({}, nullObject), record))
+                        .sort()
+                        .map((key) => record[key]));
                 }
                 const request = new sql.request(sql.pool);
                 return new Promise((resolve, reject) => {
@@ -65,69 +73,25 @@ function sqlFunctions(sql) {
             }, { INSERT: 0, UPDATE: 0, DELETE: 0, executionTime });
             return res;
         },
-        async mergeValues(data, targetTable, { matchFields, insertFields, updateFields, deleteNotMatching }) {
+        async mergeValues(data, targetTable, options) {
+            const tmpTable = `tmp_merge_${targetTable}`;
+            const deleteTmpTableIfExist = `
+            IF OBJECT_ID(N'${tmpTable}') IS NOT NULL
+            BEGIN
+            DROP TABLE ${tmpTable}
+            END
+            `;
+            const createTmpTable = `SELECT top(0) * INTO ${tmpTable} FROM ${targetTable}`;
+            await sql.q(deleteTmpTableIfExist);
+            await sql.q(createTmpTable);
+            const bulkResult = await this.bulkInsert(tmpTable, data);
             const t1 = Date.now();
-            const columns = Object.keys(data[0]);
-            // const table = new Table('table');
-            // columns.forEach((c) => table.columns.add(c, JsTypeToSqlType(c)));
-            // data.forEach((d) => table.rows.add(...Object.values(d)));
-            const values = data.map((p) => {
-                const val = [];
-                for (const column of columns) {
-                    const param = p[column];
-                    let strParam = '';
-                    switch (typeof param) {
-                        case 'undefined':
-                            strParam = '';
-                            break;
-                        case 'object':
-                            if (param && Object.prototype.toString.call(param) === '[object Date]' && !isNaN(+param)) {
-                                strParam = `'${param.toISOString()}'`;
-                            }
-                            else if (param === null) {
-                                strParam = '';
-                            }
-                            else {
-                                strParam = `N'${JSON.stringify(param)}'`;
-                            }
-                            break;
-                        case 'string':
-                            strParam = `N'${param}'`;
-                            break;
-                        case 'number':
-                            strParam = +param;
-                            break;
-                        case 'boolean':
-                            strParam = param ? 1 : 0;
-                            break;
-                    }
-                    val.push(strParam);
-                }
-                return `(${val.join(',')})`;
-            });
-            const matchFieldsString = matchFields.map((f) => `T.${f} = S.${f}`).join(' AND ');
-            const updateFieldsString = (updateFields !== null && updateFields !== void 0 ? updateFields : Object.keys(data[0]).filter((f) => matchFields.indexOf(f) === -1))
-                .map((f) => `T.${f} = S.${f}`)
-                .join(', ');
-            const insertFieldsArray = insertFields !== null && insertFields !== void 0 ? insertFields : Object.keys(data[0]);
-            const result = await sql.q(`
-            MERGE ${targetTable} WITH (SERIALIZABLE) AS T
-            USING (VALUES ${values.join(', ')}) AS S (${columns.join(', ')})
-                ON ${matchFieldsString}
-            WHEN MATCHED THEN
-                UPDATE SET ${updateFieldsString}
-            WHEN NOT MATCHED BY TARGET THEN
-                INSERT (${insertFieldsArray.join(', ')})
-                VALUES (${insertFieldsArray.map((f) => `S.${f}`).join(', ')})
-            ${deleteNotMatching ? 'WHEN NOT MATCHED BY Source THEN DELETE' : ''}
-            OUTPUT DELETED.*, $action AS [Action], INSERTED.* ;
-                `);
+            const mergeResult = await this.mergeTables(tmpTable, targetTable, options);
             const executionTime = Math.round(Date.now() - t1);
-            const res = result.reduce((pv, cv) => {
-                pv[cv.Action]++;
-                return pv;
-            }, { INSERT: 0, UPDATE: 0, DELETE: 0, executionTime });
-            return res;
+            if (!options.keepTmpTable) {
+                await sql.q(deleteTmpTableIfExist);
+            }
+            return Object.assign(Object.assign({}, mergeResult), { executionTime: executionTime + bulkResult.executionTime, insertExecutionTime: bulkResult.executionTime, mergeExecutionTime: executionTime });
         },
     };
 }

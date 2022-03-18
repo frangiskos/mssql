@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const _1 = require(".");
-const faker = require("faker");
+const faker_1 = require("@faker-js/faker");
 const assert = require("assert");
 const AssertionError = assert.AssertionError;
 const sqlConfig = {
@@ -59,11 +59,11 @@ async function runTests() {
     const personList = [];
     for (let i = 0; i < 10000; i++) {
         personList.push({
-            name: faker.name.findName(),
-            birthdate: faker.date.past(50),
-            childrenCount: faker.datatype.number(3),
-            salary: faker.datatype.number({ min: 1000, max: 3000 }),
-            isMarried: faker.datatype.boolean(),
+            name: faker_1.faker.name.findName(),
+            birthdate: faker_1.faker.date.past(50),
+            childrenCount: faker_1.faker.datatype.number(3),
+            salary: faker_1.faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker_1.faker.datatype.boolean(),
         });
     }
     log.start('sql.q Insert data into DB');
@@ -126,18 +126,18 @@ async function runTests() {
     log.start('sql.function.mergeTables');
     const morePeopleData = [
         {
-            name: faker.name.findName(),
-            birthdate: faker.date.past(50),
-            childrenCount: faker.datatype.number(3),
-            salary: faker.datatype.number({ min: 1000, max: 3000 }),
-            isMarried: faker.datatype.boolean(),
+            name: faker_1.faker.name.findName(),
+            birthdate: faker_1.faker.date.past(50),
+            childrenCount: faker_1.faker.datatype.number(3),
+            salary: faker_1.faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker_1.faker.datatype.boolean(),
         },
         {
-            name: faker.name.findName(),
-            birthdate: faker.date.past(50),
-            childrenCount: faker.datatype.number(3),
-            salary: faker.datatype.number({ min: 1000, max: 3000 }),
-            isMarried: faker.datatype.boolean(),
+            name: faker_1.faker.name.findName(),
+            birthdate: faker_1.faker.date.past(50),
+            childrenCount: faker_1.faker.datatype.number(3),
+            salary: faker_1.faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker_1.faker.datatype.boolean(),
         },
     ];
     await _1.sql.functions.insertObject('morePeople', morePeopleData);
@@ -157,19 +157,19 @@ async function runTests() {
     const toMerge = [
         {
             id: 1,
-            name: faker.name.findName(),
-            birthdate: faker.date.past(50),
-            childrenCount: faker.datatype.number(3),
-            salary: faker.datatype.number({ min: 1000, max: 3000 }),
-            isMarried: faker.datatype.boolean(),
+            name: faker_1.faker.name.findName(),
+            birthdate: faker_1.faker.date.past(50),
+            childrenCount: faker_1.faker.datatype.number(3),
+            salary: faker_1.faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker_1.faker.datatype.boolean(),
         },
         {
             id: 99999,
-            name: faker.name.findName(),
-            birthdate: faker.date.past(50),
-            childrenCount: faker.datatype.number(3),
-            salary: faker.datatype.number({ min: 1000, max: 3000 }),
-            isMarried: faker.datatype.boolean(),
+            name: faker_1.faker.name.findName(),
+            birthdate: faker_1.faker.date.past(50),
+            childrenCount: faker_1.faker.datatype.number(3),
+            salary: faker_1.faker.datatype.number({ min: 1000, max: 3000 }),
+            isMarried: faker_1.faker.datatype.boolean(),
         },
     ];
     const mergeValuesResults = await _1.sql.functions.mergeValues(toMerge, 'people', {

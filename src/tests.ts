@@ -1,6 +1,6 @@
 require('dotenv').config();
 import { sql, SqlConfig } from '.';
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import * as assert from 'assert';
 const AssertionError = assert.AssertionError;
 

@@ -59,7 +59,7 @@ async function runTests() {
     const personList = [];
     for (let i = 0; i < 10000; i++) {
         personList.push({
-            name: faker_1.faker.name.findName(),
+            name: faker_1.faker.name.fullName(),
             birthdate: faker_1.faker.date.past(50),
             childrenCount: faker_1.faker.datatype.number(3),
             salary: faker_1.faker.datatype.number({ min: 1000, max: 3000 }),
@@ -126,14 +126,14 @@ async function runTests() {
     log.start('sql.function.mergeTables');
     const morePeopleData = [
         {
-            name: faker_1.faker.name.findName(),
+            name: faker_1.faker.name.fullName(),
             birthdate: faker_1.faker.date.past(50),
             childrenCount: faker_1.faker.datatype.number(3),
             salary: faker_1.faker.datatype.number({ min: 1000, max: 3000 }),
             isMarried: faker_1.faker.datatype.boolean(),
         },
         {
-            name: faker_1.faker.name.findName(),
+            name: faker_1.faker.name.fullName(),
             birthdate: faker_1.faker.date.past(50),
             childrenCount: faker_1.faker.datatype.number(3),
             salary: faker_1.faker.datatype.number({ min: 1000, max: 3000 }),
@@ -157,7 +157,7 @@ async function runTests() {
     const toMerge = [
         {
             id: 1,
-            name: faker_1.faker.name.findName(),
+            name: faker_1.faker.name.fullName(),
             birthdate: faker_1.faker.date.past(50),
             childrenCount: faker_1.faker.datatype.number(3),
             salary: faker_1.faker.datatype.number({ min: 1000, max: 3000 }),
@@ -165,7 +165,7 @@ async function runTests() {
         },
         {
             id: 99999,
-            name: faker_1.faker.name.findName(),
+            name: faker_1.faker.name.fullName(),
             birthdate: faker_1.faker.date.past(50),
             childrenCount: faker_1.faker.datatype.number(3),
             salary: faker_1.faker.datatype.number({ min: 1000, max: 3000 }),
